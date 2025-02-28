@@ -1,35 +1,13 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { useStock } from "@/context/StockContext";
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
 
 const UserPortfolio: React.FC = () => {
   const { user } = useAuth();
   const { stockData } = useStock();
-  
-  useEffect(() => {
-    // This effect will refresh the user data when stock price changes
-    const refreshUserData = async () => {
-      if (!user) return;
-      
-      try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-          
-        // User data is refreshed via AuthContext subscription
-      } catch (error) {
-        console.error('Error refreshing user data:', error);
-      }
-    };
-    
-    // The refreshUserData function will be triggered every time stockData.currentPrice changes
-  }, [user, stockData.currentPrice]);
   
   if (!user) return null;
   
