@@ -1,44 +1,70 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { StockProvider } from "./context/StockContext";
+import { Toaster } from "@/components/ui/sonner";
+import Dashboard from "@/pages/Dashboard";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import Trade from "@/pages/Trade";
+import Portfolio from "@/pages/Portfolio";
+import News from "@/pages/News";
+import NotFound from "@/pages/NotFound";
+import Index from "@/pages/Index";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Trade from "./pages/Trade";
-import Portfolio from "./pages/Portfolio";
-import News from "./pages/News";
-import NotFound from "./pages/NotFound";
+import "./App.css";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+function App() {
+  return (
+    <>
       <AuthProvider>
         <StockProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+          <Router>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/trade" element={<Trade />} />
-              <Route path="/portfolio" element={<Portfolio />} />
-              <Route path="/news" element={<News />} />
+              <Route path="/register" element={<Register />} />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/trade" 
+                element={
+                  <ProtectedRoute>
+                    <Trade />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/portfolio" 
+                element={
+                  <ProtectedRoute>
+                    <Portfolio />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/news" 
+                element={
+                  <ProtectedRoute>
+                    <News />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
+          </Router>
+          <Toaster position="top-right" />
         </StockProvider>
       </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </>
+  );
+}
 
 export default App;

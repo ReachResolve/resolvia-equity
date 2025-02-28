@@ -9,7 +9,164 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      news: {
+        Row: {
+          author: string
+          content: string
+          id: string
+          timestamp: string | null
+          title: string
+        }
+        Insert: {
+          author: string
+          content: string
+          id?: string
+          timestamp?: string | null
+          title: string
+        }
+        Update: {
+          author?: string
+          content?: string
+          id?: string
+          timestamp?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          id: string
+          price: number
+          shares: number
+          status: string
+          timestamp: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          price: number
+          shares: number
+          status?: string
+          timestamp?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          price?: number
+          shares?: number
+          status?: string
+          timestamp?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar: string | null
+          balance: number
+          email: string
+          id: string
+          joined_at: string | null
+          name: string
+          role: string
+          shares_owned: number
+        }
+        Insert: {
+          avatar?: string | null
+          balance?: number
+          email: string
+          id: string
+          joined_at?: string | null
+          name: string
+          role: string
+          shares_owned?: number
+        }
+        Update: {
+          avatar?: string | null
+          balance?: number
+          email?: string
+          id?: string
+          joined_at?: string | null
+          name?: string
+          role?: string
+          shares_owned?: number
+        }
+        Relationships: []
+      }
+      stock_prices: {
+        Row: {
+          id: string
+          price: number
+          timestamp: string | null
+        }
+        Insert: {
+          id?: string
+          price: number
+          timestamp?: string | null
+        }
+        Update: {
+          id?: string
+          price?: number
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          counterparty_id: string | null
+          id: string
+          price: number
+          shares: number
+          timestamp: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          counterparty_id?: string | null
+          id?: string
+          price: number
+          shares: number
+          timestamp?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          counterparty_id?: string | null
+          id?: string
+          price?: number
+          shares?: number
+          timestamp?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_counterparty_id_fkey"
+            columns: ["counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
