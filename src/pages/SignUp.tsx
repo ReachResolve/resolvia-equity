@@ -7,26 +7,54 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-const Login = () => {
-  const { login, isAuthenticated, isLoading } = useAuth();
+const SignUp = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    
+    // Validate form
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      const success = await login(email, password);
-      if (!success) {
-        setError("Invalid credentials. Please try again.");
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            name: name,
+          }
+        }
+      });
+      
+      if (error) {
+        setError(error.message);
+      } else if (data) {
+        toast.success("Sign up successful! Please check your email to verify your account.");
       }
     } catch (err) {
-      setError("An error occurred during login. Please try again.");
+      console.error("Registration error:", err);
+      setError("An unexpected error occurred during registration.");
     } finally {
       setIsSubmitting(false);
     }
@@ -47,8 +75,8 @@ const Login = () => {
         
         <Card className="glass-card border-0">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold">Log in</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardTitle className="text-2xl font-semibold">Create an account</CardTitle>
+            <CardDescription>Enter your details to sign up</CardDescription>
           </CardHeader>
           <CardContent>
             {error && (
@@ -59,6 +87,17 @@ const Login = () => {
             )}
             
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -71,10 +110,7 @@ const Login = () => {
                 />
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <a href="#" className="text-xs text-primary hover:underline">Forgot password?</a>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -83,21 +119,31 @@ const Login = () => {
                   required
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                    <span>Signing in...</span>
+                    <span>Creating account...</span>
                   </div>
-                ) : "Sign in"}
+                ) : "Sign up"}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 items-center">
             <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:underline">
-                Sign up
+              Already have an account?{" "}
+              <Link to="/login" className="text-primary hover:underline">
+                Sign in
               </Link>
             </p>
           </CardFooter>
@@ -107,4 +153,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;

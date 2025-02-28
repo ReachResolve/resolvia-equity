@@ -57,6 +57,9 @@ const Header: React.FC = () => {
               <Button variant="outline" size="sm" asChild>
                 <Link to="/login">Login</Link>
               </Button>
+              <Button size="sm" asChild>
+                <Link to="/signup">Sign Up</Link>
+              </Button>
             </div>
           )}
         </div>
