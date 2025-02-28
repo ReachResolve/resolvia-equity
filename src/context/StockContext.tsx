@@ -173,10 +173,10 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
           const change = currentPrice * 0.02 * (Math.random() * 2 - 1);
           const newPrice = parseFloat((currentPrice + change).toFixed(2));
           
-          // Insert the new price into the database - Here we need to use number type
+          // Insert the new price into the database - Convert number to string for Supabase
           await supabase
             .from('stock_prices')
-            .insert({ price: newPrice });
+            .insert({ price: newPrice.toString() });
         } catch (error) {
           console.error('Error updating stock price:', error);
         }
@@ -325,7 +325,7 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
           user_id: user.id,
           type: 'buy',
           shares,
-          price
+          price: price.toString() // Convert number to string for Supabase
         })
         .select()
         .single();
@@ -379,7 +379,7 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
           user_id: user.id,
           type: 'sell',
           shares,
-          price
+          price: price.toString() // Convert number to string for Supabase
         })
         .select()
         .single();
@@ -437,7 +437,7 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
           user_id: user.id,
           type,
           shares,
-          price
+          price: price.toString() // Convert number to string for Supabase
         });
       
       if (error) {

@@ -14,7 +14,6 @@ export const supabase = createClient<Database>(
       persistSession: true,
     },
     global: {
-      fetch: (...args) => fetch(...args),
       headers: {
         'X-Client-Info': `supabase-js/2.49.1`
       }
