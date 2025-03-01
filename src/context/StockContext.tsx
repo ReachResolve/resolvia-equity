@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { StockData, Transaction, Order, NewsItem, Wallet } from "../types";
 import { mockStockData, mockTransactions, mockOrders, mockNewsItems, generateTodayPriceHistory } from "../data/mockData";
@@ -161,7 +160,25 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Add the transaction to local state
       if (transaction) {
-        setTransactions(prev => [transaction as Transaction, ...prev]);
+        // Transform the snake_case to camelCase for consistency
+        const formattedTransaction: Transaction = {
+          id: transaction.id,
+          userId: transaction.user_id,
+          user_id: transaction.user_id,
+          type: transaction.type,
+          shares: transaction.shares,
+          price: transaction.price,
+          timestamp: transaction.timestamp,
+          counterpartyId: transaction.counterparty_id,
+          counterparty_id: transaction.counterparty_id,
+          senderWalletId: transaction.sender_wallet_id,
+          sender_wallet_id: transaction.sender_wallet_id,
+          receiverWalletId: transaction.receiver_wallet_id,
+          receiver_wallet_id: transaction.receiver_wallet_id,
+          creditedDebited: transaction.credited_debited,
+          credited_debited: transaction.credited_debited
+        };
+        setTransactions(prev => [formattedTransaction, ...prev]);
       }
 
       toast.success(`Successfully purchased ${shares} shares at $${price}`);
@@ -219,7 +236,25 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Add the transaction to local state
       if (transaction) {
-        setTransactions(prev => [transaction as Transaction, ...prev]);
+        // Transform the snake_case to camelCase for consistency
+        const formattedTransaction: Transaction = {
+          id: transaction.id,
+          userId: transaction.user_id,
+          user_id: transaction.user_id,
+          type: transaction.type,
+          shares: transaction.shares,
+          price: transaction.price,
+          timestamp: transaction.timestamp,
+          counterpartyId: transaction.counterparty_id,
+          counterparty_id: transaction.counterparty_id,
+          senderWalletId: transaction.sender_wallet_id,
+          sender_wallet_id: transaction.sender_wallet_id,
+          receiverWalletId: transaction.receiver_wallet_id,
+          receiver_wallet_id: transaction.receiver_wallet_id,
+          creditedDebited: transaction.credited_debited,
+          credited_debited: transaction.credited_debited
+        };
+        setTransactions(prev => [formattedTransaction, ...prev]);
       }
 
       toast.success(`Successfully sold ${shares} shares at $${price}`);

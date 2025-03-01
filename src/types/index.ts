@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -30,14 +29,19 @@ export interface StockData {
 export interface Transaction {
   id: string;
   userId: string;
+  user_id?: string;
   type: 'buy' | 'sell' | 'grant';
   shares: number;
   price: number;
   timestamp: string;
   counterpartyId?: string;
+  counterparty_id?: string;
   senderWalletId?: string;
+  sender_wallet_id?: string;
   receiverWalletId?: string;
+  receiver_wallet_id?: string;
   creditedDebited?: 'credited' | 'debited';
+  credited_debited?: string;
 }
 
 export interface OrderBook {
