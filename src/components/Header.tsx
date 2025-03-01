@@ -4,9 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "@/hooks/use-theme";
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
     <header className="border-b border-border py-3 px-4 sm:px-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-10 animate-fade-in">
@@ -23,6 +30,21 @@ const Header: React.FC = () => {
         </nav>
         
         <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-[1.2rem] w-[1.2rem]" />
+            ) : (
+              <Moon className="h-[1.2rem] w-[1.2rem]" />
+            )}
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+          
           {user ? (
             <div className="flex items-center space-x-4">
               <div className="hidden sm:block text-right">

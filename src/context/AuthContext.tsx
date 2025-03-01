@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Improved session handling
   useEffect(() => {
     // Check for active session on load
     const checkSession = async () => {
@@ -28,33 +29,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          // Get user profile data
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*, wallets:wallet_id(*)')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (profileError) {
-            console.error("Error fetching profile:", profileError);
-            throw profileError;
-          }
-          
-          if (profile) {
-            const userData: User = {
-              id: profile.id,
-              name: profile.name || session.user.email?.split('@')[0] || 'User',
-              email: session.user.email || '',
-              avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`,
-              role: (profile.role as 'employee' | 'admin') || 'employee',
-              sharesOwned: profile.wallets?.shares || 0,
-              balance: profile.balance || 10000,
-              joinedAt: profile.joined_at || new Date().toISOString(),
-              walletId: profile.wallet_id,
-            };
-            
-            setUser(userData);
-          }
+          await getUserProfile(session);
+        } else {
+          setUser(null);
         }
       } catch (error) {
         console.error("Session check error:", error);
@@ -69,36 +46,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
         setIsLoading(true);
         
         if (event === 'SIGNED_IN' && session) {
-          // Get user profile data
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*, wallets:wallet_id(*)')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error("Error fetching profile:", profileError);
-            toast.error("Error loading your profile data");
-          }
-          
-          if (profile) {
-            const userData: User = {
-              id: profile.id,
-              name: profile.name || session.user.email?.split('@')[0] || 'User',
-              email: session.user.email || '',
-              avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`,
-              role: (profile.role as 'employee' | 'admin') || 'employee',
-              sharesOwned: profile.wallets?.shares || 0,
-              balance: profile.balance || 10000,
-              joinedAt: profile.joined_at || new Date().toISOString(),
-              walletId: profile.wallet_id,
-            };
-            
-            setUser(userData);
-          }
+          await getUserProfile(session);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
         }
@@ -111,6 +63,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Extract profile fetching logic to reuse it
+  const getUserProfile = async (session: any) => {
+    try {
+      // Get user profile data
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*, wallets:wallet_id(*)')
+        .eq('id', session.user.id)
+        .single();
+        
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        throw profileError;
+      }
+      
+      if (profile) {
+        const userData: User = {
+          id: profile.id,
+          name: profile.name || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`,
+          role: (profile.role as 'employee' | 'admin') || 'employee',
+          sharesOwned: profile.wallets?.shares || 0,
+          balance: profile.balance || 10000,
+          joinedAt: profile.joined_at || new Date().toISOString(),
+          walletId: profile.wallet_id,
+        };
+        
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      // Don't clear the user here as it could cause unnecessary logouts
+    }
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
