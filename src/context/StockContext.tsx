@@ -1,9 +1,10 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { StockData, Transaction, Order, NewsItem } from "../types";
+import { StockData, Transaction, Order, NewsItem, Wallet } from "../types";
 import { mockStockData, mockTransactions, mockOrders, mockNewsItems, generateTodayPriceHistory } from "../data/mockData";
 import { toast } from "sonner";
 import { useAuth } from "./AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StockContextType {
   stockData: StockData;
@@ -71,9 +72,55 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const buyShares = (shares: number, price: number) => {
+  // Helper function to update wallet shares
+  const updateWalletShares = async (walletId: string, shareChange: number) => {
+    if (!walletId) {
+      toast.error("Wallet not found");
+      return false;
+    }
+
+    try {
+      // Get current wallet data
+      const { data: wallet, error: fetchError } = await supabase
+        .from('wallets')
+        .select('shares')
+        .eq('id', walletId)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching wallet:", fetchError);
+        throw fetchError;
+      }
+
+      // Calculate new shares amount (ensure it doesn't go below 0)
+      const newShares = Math.max(0, (wallet?.shares || 0) + shareChange);
+
+      // Update wallet
+      const { error: updateError } = await supabase
+        .from('wallets')
+        .update({ shares: newShares })
+        .eq('id', walletId);
+
+      if (updateError) {
+        console.error("Error updating wallet:", updateError);
+        throw updateError;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Wallet update error:", error);
+      return false;
+    }
+  };
+
+  const buyShares = async (shares: number, price: number) => {
     if (!user) {
       toast.error("You must be logged in to buy shares");
+      return;
+    }
+
+    if (!user.walletId) {
+      toast.error("Wallet not found");
       return;
     }
 
@@ -82,22 +129,56 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const newTransaction: Transaction = {
-      id: `t${Date.now()}`,
-      userId: user.id,
-      type: "buy",
-      shares,
-      price,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      // Create the transaction
+      const { data: transaction, error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: "buy",
+          shares,
+          price,
+          sender_wallet_id: null,
+          receiver_wallet_id: user.walletId,
+          credited_debited: "credited"
+        })
+        .select()
+        .single();
 
-    setTransactions(prev => [newTransaction, ...prev]);
-    toast.success(`Successfully purchased ${shares} shares at $${price}`);
+      if (transactionError) throw transactionError;
+
+      // Update the wallet shares
+      const walletUpdated = await updateWalletShares(user.walletId, shares);
+      if (!walletUpdated) throw new Error("Failed to update wallet");
+
+      // Update the user's balance
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ balance: user.balance - (shares * price) })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Add the transaction to local state
+      if (transaction) {
+        setTransactions(prev => [transaction as Transaction, ...prev]);
+      }
+
+      toast.success(`Successfully purchased ${shares} shares at $${price}`);
+    } catch (error) {
+      console.error("Buy shares error:", error);
+      toast.error("Failed to complete purchase");
+    }
   };
 
-  const sellShares = (shares: number, price: number) => {
+  const sellShares = async (shares: number, price: number) => {
     if (!user) {
       toast.error("You must be logged in to sell shares");
+      return;
+    }
+
+    if (!user.walletId) {
+      toast.error("Wallet not found");
       return;
     }
 
@@ -106,17 +187,46 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const newTransaction: Transaction = {
-      id: `t${Date.now()}`,
-      userId: user.id,
-      type: "sell",
-      shares,
-      price,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      // Create the transaction
+      const { data: transaction, error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: "sell",
+          shares,
+          price,
+          sender_wallet_id: user.walletId,
+          receiver_wallet_id: null,
+          credited_debited: "debited"
+        })
+        .select()
+        .single();
 
-    setTransactions(prev => [newTransaction, ...prev]);
-    toast.success(`Successfully sold ${shares} shares at $${price}`);
+      if (transactionError) throw transactionError;
+
+      // Update the wallet shares
+      const walletUpdated = await updateWalletShares(user.walletId, -shares);
+      if (!walletUpdated) throw new Error("Failed to update wallet");
+
+      // Update the user's balance
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ balance: user.balance + (shares * price) })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Add the transaction to local state
+      if (transaction) {
+        setTransactions(prev => [transaction as Transaction, ...prev]);
+      }
+
+      toast.success(`Successfully sold ${shares} shares at $${price}`);
+    } catch (error) {
+      console.error("Sell shares error:", error);
+      toast.error("Failed to complete sale");
+    }
   };
 
   const placeOrder = (type: "buy" | "sell", shares: number, price: number) => {

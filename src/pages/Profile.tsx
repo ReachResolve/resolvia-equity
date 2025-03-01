@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { User } from "@/types";
 import UserPortfolio from "@/components/UserPortfolio";
-import { Pencil, Check, X } from "lucide-react";
+import { Pencil, Check, X, Wallet } from "lucide-react";
 
 const Profile = () => {
   const { user, isLoading } = useAuth();
@@ -174,6 +174,25 @@ const Profile = () => {
                   <p className="text-2xl font-semibold">{user.sharesOwned}</p>
                 </div>
               </div>
+              
+              {user.walletId && (
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Wallet className="h-5 w-5 text-primary" />
+                    <h4 className="text-sm font-medium">Wallet Information</h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Wallet ID</p>
+                      <p className="text-sm font-mono">{user.walletId}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Created On</p>
+                      <p className="text-sm">{joinedDate}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-1">Member Since</h4>

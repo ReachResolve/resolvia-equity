@@ -56,6 +56,15 @@ const UserPortfolio: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {user.walletId && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-sm font-medium mb-2">Wallet Information</p>
+              <div className="text-xs text-muted-foreground">
+                <p>Wallet ID: {user.walletId.substring(0, 8)}...</p>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

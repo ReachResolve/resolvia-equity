@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Get user profile data
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('*')
+            .select('*, wallets:wallet_id(*)')
             .eq('id', session.user.id)
             .single();
             
@@ -47,9 +47,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               email: session.user.email || '',
               avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`,
               role: (profile.role as 'employee' | 'admin') || 'employee',
-              sharesOwned: profile.shares_owned || 0,
+              sharesOwned: profile.wallets?.shares || 0,
               balance: profile.balance || 10000,
               joinedAt: profile.joined_at || new Date().toISOString(),
+              walletId: profile.wallet_id,
             };
             
             setUser(userData);
@@ -74,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Get user profile data
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('*')
+            .select('*, wallets:wallet_id(*)')
             .eq('id', session.user.id)
             .single();
             
@@ -90,9 +91,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               email: session.user.email || '',
               avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`,
               role: (profile.role as 'employee' | 'admin') || 'employee',
-              sharesOwned: profile.shares_owned || 0,
+              sharesOwned: profile.wallets?.shares || 0,
               balance: profile.balance || 10000,
               joinedAt: profile.joined_at || new Date().toISOString(),
+              walletId: profile.wallet_id,
             };
             
             setUser(userData);

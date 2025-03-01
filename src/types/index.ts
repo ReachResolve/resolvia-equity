@@ -8,6 +8,7 @@ export interface User {
   sharesOwned: number;
   balance: number;
   joinedAt: string;
+  walletId?: string;
 }
 
 export interface StockPrice {
@@ -34,6 +35,9 @@ export interface Transaction {
   price: number;
   timestamp: string;
   counterpartyId?: string;
+  senderWalletId?: string;
+  receiverWalletId?: string;
+  creditedDebited?: 'credited' | 'debited';
 }
 
 export interface OrderBook {
@@ -56,4 +60,11 @@ export interface NewsItem {
   content: string;
   timestamp: string;
   author: string;
+}
+
+export interface Wallet {
+  id: string;
+  userId: string;
+  shares: number;
+  createdAt: string;
 }

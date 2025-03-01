@@ -81,6 +81,7 @@ export type Database = {
           name: string
           role: string
           shares_owned: number
+          wallet_id: string | null
         }
         Insert: {
           avatar?: string | null
@@ -91,6 +92,7 @@ export type Database = {
           name: string
           role: string
           shares_owned?: number
+          wallet_id?: string | null
         }
         Update: {
           avatar?: string | null
@@ -101,8 +103,17 @@ export type Database = {
           name?: string
           role?: string
           shares_owned?: number
+          wallet_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stock_prices: {
         Row: {
@@ -125,8 +136,11 @@ export type Database = {
       transactions: {
         Row: {
           counterparty_id: string | null
+          credited_debited: string | null
           id: string
           price: number
+          receiver_wallet_id: string | null
+          sender_wallet_id: string | null
           shares: number
           timestamp: string | null
           type: string
@@ -134,8 +148,11 @@ export type Database = {
         }
         Insert: {
           counterparty_id?: string | null
+          credited_debited?: string | null
           id?: string
           price: number
+          receiver_wallet_id?: string | null
+          sender_wallet_id?: string | null
           shares: number
           timestamp?: string | null
           type: string
@@ -143,8 +160,11 @@ export type Database = {
         }
         Update: {
           counterparty_id?: string | null
+          credited_debited?: string | null
           id?: string
           price?: number
+          receiver_wallet_id?: string | null
+          sender_wallet_id?: string | null
           shares?: number
           timestamp?: string | null
           type?: string
@@ -159,6 +179,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "transactions_receiver_wallet_id_fkey"
+            columns: ["receiver_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_sender_wallet_id_fkey"
+            columns: ["sender_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transactions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -166,6 +200,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallets: {
+        Row: {
+          created_at: string | null
+          id: string
+          shares: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          shares?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          shares?: number
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
