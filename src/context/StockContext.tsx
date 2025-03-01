@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { StockData, Transaction, Order, NewsItem, Wallet } from "../types";
 import { mockStockData, mockTransactions, mockOrders, mockNewsItems, generateTodayPriceHistory } from "../data/mockData";
@@ -165,7 +166,7 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
           id: transaction.id,
           userId: transaction.user_id,
           user_id: transaction.user_id,
-          type: transaction.type,
+          type: transaction.type as 'buy' | 'sell' | 'grant',
           shares: transaction.shares,
           price: transaction.price,
           timestamp: transaction.timestamp,
@@ -175,7 +176,7 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
           sender_wallet_id: transaction.sender_wallet_id,
           receiverWalletId: transaction.receiver_wallet_id,
           receiver_wallet_id: transaction.receiver_wallet_id,
-          creditedDebited: transaction.credited_debited,
+          creditedDebited: transaction.credited_debited as 'credited' | 'debited',
           credited_debited: transaction.credited_debited
         };
         setTransactions(prev => [formattedTransaction, ...prev]);
@@ -241,7 +242,7 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
           id: transaction.id,
           userId: transaction.user_id,
           user_id: transaction.user_id,
-          type: transaction.type,
+          type: transaction.type as 'buy' | 'sell' | 'grant',
           shares: transaction.shares,
           price: transaction.price,
           timestamp: transaction.timestamp,
@@ -251,7 +252,7 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
           sender_wallet_id: transaction.sender_wallet_id,
           receiverWalletId: transaction.receiver_wallet_id,
           receiver_wallet_id: transaction.receiver_wallet_id,
-          creditedDebited: transaction.credited_debited,
+          creditedDebited: transaction.credited_debited as 'credited' | 'debited',
           credited_debited: transaction.credited_debited
         };
         setTransactions(prev => [formattedTransaction, ...prev]);
