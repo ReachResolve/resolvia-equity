@@ -1,7 +1,6 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { StockData, Transaction, Order, NewsItem, Wallet } from "../types";
-import { mockStockData, mockTransactions, mockOrders, mockNewsItems, generateTodayPriceHistory } from "../data/mockData";
+import { StockData, Transaction, Order, NewsItem } from "../types";
+import { mockStockData, mockTransactions, mockOrders, mockNewsItems } from "../data/mockData";
 import { toast } from "sonner";
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +28,6 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading stock data
     const loadData = async () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       setIsLoading(false);
@@ -37,7 +35,6 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
 
     loadData();
 
-    // Simulate real-time price updates
     const interval = setInterval(() => {
       setStockData(prev => {
         const lastPrice = prev.currentPrice;
@@ -45,16 +42,13 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
         const newPrice = parseFloat((lastPrice + change).toFixed(2));
         const newPercentChange = parseFloat((((newPrice - prev.previousClose) / prev.previousClose) * 100).toFixed(2));
         
-        // Add new price to history
         const now = new Date().toISOString();
         const updatedHistory = [...prev.priceHistory];
         
-        // Only add a new point every minute to not flood the chart
         if (updatedHistory.length === 0 || 
             (new Date(now).getTime() - new Date(updatedHistory[updatedHistory.length - 1].timestamp).getTime()) > 60000) {
           updatedHistory.push({ timestamp: now, price: newPrice });
         } else {
-          // Update the last point
           updatedHistory[updatedHistory.length - 1] = { timestamp: now, price: newPrice };
         }
         
@@ -72,7 +66,6 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Helper function to update wallet shares
   const updateWalletShares = async (walletId: string, shareChange: number) => {
     if (!walletId) {
       toast.error("Wallet not found");
@@ -80,11 +73,10 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      // Get current wallet data
       const { data: wallet, error: fetchError } = await supabase
         .from('wallets')
         .select('shares')
-        .eq('id', walletId)
+        .eq('"Wallet id"', walletId)
         .single();
 
       if (fetchError) {
@@ -92,14 +84,12 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
         throw fetchError;
       }
 
-      // Calculate new shares amount (ensure it doesn't go below 0)
       const newShares = Math.max(0, (wallet?.shares || 0) + shareChange);
 
-      // Update wallet
       const { error: updateError } = await supabase
         .from('wallets')
         .update({ shares: newShares })
-        .eq('id', walletId);
+        .eq('"Wallet id"', walletId);
 
       if (updateError) {
         console.error("Error updating wallet:", updateError);
@@ -130,7 +120,6 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      // Create the transaction
       const { data: transaction, error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -147,21 +136,10 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (transactionError) throw transactionError;
 
-      // Update the wallet shares
       const walletUpdated = await updateWalletShares(user.walletId, shares);
       if (!walletUpdated) throw new Error("Failed to update wallet");
 
-      // Update the user's balance
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ balance: user.balance - (shares * price) })
-        .eq('id', user.id);
-
-      if (profileError) throw profileError;
-
-      // Add the transaction to local state
       if (transaction) {
-        // Transform the snake_case to camelCase for consistency
         const formattedTransaction: Transaction = {
           id: transaction.id,
           userId: transaction.user_id,
@@ -206,7 +184,6 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      // Create the transaction
       const { data: transaction, error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -223,21 +200,10 @@ export const StockProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (transactionError) throw transactionError;
 
-      // Update the wallet shares
       const walletUpdated = await updateWalletShares(user.walletId, -shares);
       if (!walletUpdated) throw new Error("Failed to update wallet");
 
-      // Update the user's balance
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ balance: user.balance + (shares * price) })
-        .eq('id', user.id);
-
-      if (profileError) throw profileError;
-
-      // Add the transaction to local state
       if (transaction) {
-        // Transform the snake_case to camelCase for consistency
         const formattedTransaction: Transaction = {
           id: transaction.id,
           userId: transaction.user_id,

@@ -80,14 +80,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       if (profile) {
+        // Run a separate query to get the user's balance from a custom view or function
+        // For now, let's use a default value
+        const defaultBalance = 10000;
+
         const userData: User = {
           id: profile.id,
           name: profile.name || session.user.email?.split('@')[0] || 'User',
           email: session.user.email || '',
-          avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`,
+          avatar: profile["Profile Pic"] || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`,
           role: (profile.role as 'employee' | 'admin') || 'employee',
           sharesOwned: profile.wallets?.shares || 0,
-          balance: profile.balance || 10000,
+          balance: defaultBalance, // Using default balance temporarily
           joinedAt: profile.joined_at || new Date().toISOString(),
           walletId: profile.wallet_id,
         };
