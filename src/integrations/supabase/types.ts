@@ -73,34 +73,31 @@ export type Database = {
       }
       profiles: {
         Row: {
-          avatar: string | null
-          balance: number
           email: string
           id: string
           joined_at: string | null
           name: string
+          "Profile Pic": string | null
           role: string
           shares_owned: number
           wallet_id: string | null
         }
         Insert: {
-          avatar?: string | null
-          balance?: number
           email: string
           id: string
           joined_at?: string | null
           name: string
+          "Profile Pic"?: string | null
           role: string
           shares_owned?: number
           wallet_id?: string | null
         }
         Update: {
-          avatar?: string | null
-          balance?: number
           email?: string
           id?: string
           joined_at?: string | null
           name?: string
+          "Profile Pic"?: string | null
           role?: string
           shares_owned?: number
           wallet_id?: string | null
@@ -111,23 +108,20 @@ export type Database = {
             columns: ["wallet_id"]
             isOneToOne: false
             referencedRelation: "wallets"
-            referencedColumns: ["id"]
+            referencedColumns: ["Wallet id"]
           },
         ]
       }
       stock_prices: {
         Row: {
-          id: string
           price: number
           timestamp: string | null
         }
         Insert: {
-          id?: string
           price: number
           timestamp?: string | null
         }
         Update: {
-          id?: string
           price?: number
           timestamp?: string | null
         }
@@ -183,14 +177,14 @@ export type Database = {
             columns: ["receiver_wallet_id"]
             isOneToOne: false
             referencedRelation: "wallets"
-            referencedColumns: ["id"]
+            referencedColumns: ["Wallet id"]
           },
           {
             foreignKeyName: "transactions_sender_wallet_id_fkey"
             columns: ["sender_wallet_id"]
             isOneToOne: false
             referencedRelation: "wallets"
-            referencedColumns: ["id"]
+            referencedColumns: ["Wallet id"]
           },
           {
             foreignKeyName: "transactions_user_id_fkey"
@@ -204,21 +198,21 @@ export type Database = {
       wallets: {
         Row: {
           created_at: string | null
-          id: string
           shares: number
           user_id: string
+          "Wallet id": string
         }
         Insert: {
           created_at?: string | null
-          id?: string
           shares?: number
           user_id: string
+          "Wallet id"?: string
         }
         Update: {
           created_at?: string | null
-          id?: string
           shares?: number
           user_id?: string
+          "Wallet id"?: string
         }
         Relationships: []
       }
